@@ -1,0 +1,4 @@
+# This repo is public. Agent instructions name the private app repo, the Linear
+# workspace, and the internal release process, so they stay on the machine that
+# needs them rather than shipping to whoever clones the download page.
+CLAUDE.md
