@@ -63,6 +63,8 @@ Pane movement is vim's arrow keys. **H** is left, **L** is right, **J** is down,
 | Resize the pane                  | `⌘⇧H` `⌘⇧J` `⌘⇧K` `⌘⇧L`     |
 | Focus Mode (pane fills the window) | `⌘F`                      |
 | Fill Screen (window fills the desktop) | `⌘⇧F`                 |
+| Scroll mode (read the buffer with the keyboard) | `⌘⇧S`       |
+| Find in the pane's scrollback    | `⌘/`                        |
 | Bottom drawer                    | `⌘B`                        |
 | Right drawer                     | `⌘\`                        |
 | New window                       | `⌘N`                        |
@@ -99,9 +101,9 @@ A tool float is a command on a shortcut, floating over your work.
 
 1. Press **⌘,** to open Settings, then choose **Tools**.
 2. Choose **＋ Add tool float**.
-3. Set a command (`lazygit`), a shortcut (⌘G), and an icon.
+3. Set a command (`lazygit`), a shortcut (⌘⌥G), and an icon.
 
-⌘G now floats lazygit over your work and closes it again. The float stays warm,
+⌘⌥G now floats lazygit over your work and closes it again. The float stays warm,
 so reopening it is instant. The same works for `btop`, a dev server, or `gh dash`.
 
 ## Review a diff
@@ -117,6 +119,30 @@ reading as code.
 
 `y` yanks the selected code. `Y` yanks a `path:42-44` reference instead, so you can
 hand an agent the exact lines you mean, and `⏎` opens a comment on them.
+
+## Read back through a pane
+
+**⌘⇧S** puts the focused pane into scroll mode, and the keys are vim's again. `j` and
+`k` move a row, `h` and `l` a column, `w` `b` `e` a word, `0` and `$` reach the ends of
+a line, `{` and `}` jump between blocks of output, `⌃d` and `⌃u` move a half page, and
+`gg` and `G` go to the ends. The header tells you how far below you are, and a band
+marks the row you are reading.
+
+`v` starts a selection and `V` takes whole lines. `y` copies it and flashes what it
+took. `q` leaves. Nothing you type reaches the shell while the mode is up, but your own
+shortcuts still work, so ⌘T and pane movement are never swallowed.
+
+**⌘/** searches the pane's whole scrollback rather than only what is on screen, and opens
+on whatever you have selected, so a word you can see never has to be retyped. Every
+match lights up as you type, the bar counts them, and if the only matches are further
+back the pane scrolls so you can see one while you type. `⏎` hands the keys back and
+drops you on the match in scroll mode, where `n` and `N` step through the rest and `y`
+copies what you came for. `Esc` closes the bar and hands the pane back where you were
+before you opened it.
+
+A selection stays on the screen you can see. Scroll to the block you want first, then
+select it: you get the selection back whenever the buffer moves under it, whether you
+scrolled or a running command printed.
 
 ## Neovim: one motion across splits and panes
 
@@ -162,9 +188,10 @@ config works anywhere.
 including Rosé Pine, Catppuccin, Tokyo Night, Nord, Gruvbox, and Dracula. A theme
 colors the whole app, not only the terminal text.
 
-**Shortcuts:** press ⌘, and choose **Keybinds**. Pick a shortcut and press the
+**Shortcuts:** press ⌘, and choose **Shortcuts**. Pick a shortcut and press the
 new one. If it collides with an existing shortcut, the app tells you which action
-already owns it.
+already owns it. Delete takes a shortcut away, and the capture popover has a reset
+icon that puts the default back.
 
 ## One thing that looks like a bug
 
