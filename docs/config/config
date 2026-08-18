@@ -172,6 +172,22 @@
 # In-app Settings edit: applies live.
 # agent-notifications = true          # true | false
 
+# The in-app card for a background tab that needs you. Sticky waits to be
+# answered; auto clears itself after `toast-duration`. Either way the tab's
+# colored number stays until you visit the tab or press Dismiss.
+# In-app Settings edit: applies to the next notification.
+# attention-toast = sticky            # sticky | auto
+
+# The same, for the card a long command posts when it finishes in a background
+# tab.
+# In-app Settings edit: applies to the next notification.
+# completion-toast = sticky           # sticky | auto
+
+# Seconds a card that clears itself stays up. Covers every notice that clears
+# itself, not only the two above.
+# In-app Settings edit: applies to the next notice.
+# toast-duration = 4                  # 1-60
+
 # ─── Updates ─────────────────────────────────────────────────────────────────
 
 # Check for a new release in the background. On by default; turn it off to check
@@ -197,9 +213,10 @@
 # you like. A float's `key:` is the single source of truth for both its chord and
 # its palette glyph.
 #
-# One float ships built in: Scratch, on cmd+;, a blank shell over the window that
-# keeps running when you dismiss it and dies when you type `exit`. It has no line
-# here and no Settings > Tools row. Rebind it under Keybinds below, or in
+# One float ships built in: Scratch, on cmd+;, a blank shell over the tab that keeps
+# running when you dismiss it and dies when you type `exit`. Each tab gets its own,
+# the way each tab gets its own drawers, and closing a tab closes the shell in it.
+# It has no line here and no Settings > Tools row. Rebind it under Keybinds below, or in
 # Settings > Shortcuts. `scratch` is a reserved name: a `float =` line whose title
 # lands on it is refused, and the app tells you which line it was.
 #
@@ -238,7 +255,10 @@
 #                        (e.g. `q`); the next open is cold, not resumed
 #   toolbar  (optional)  false = no toolbar button; the shortcut     (default true)
 #                        and palette entry stay live
-#   icon     (optional)  SF Symbol name or bundled mark (github/git) (default square.on.square)
+#   icon     (optional)  SF Symbol name, or a bundled brand mark    (default square.on.square)
+#                        (github, git, docker, claude, htop and more:
+#                        the full set is the icon picker in
+#                        Settings → Tools)
 #   width    (optional)  width as a fraction of the tab              (default 0.85)
 #   height   (optional)  height as a fraction of the tab            (default 0.85)
 #
@@ -306,8 +326,9 @@
 #   scroll_to_top  scroll_to_bottom  scroll_page_up  scroll_page_down
 #   jump_to_previous_prompt  jump_to_next_prompt  scroll_to_selection
 #   search_selection
-#   find_next  find_previous  (no default; `n` and `N` step a live search)
+#   search_next  search_previous  (no default; `n` and `N` step a live search)
 #   clear_screen  paste_selection
+#   dismiss_toast  dismiss_all_toasts
 #   select_all  (no default; Edit > Select All holds ⌘A)
 #   write_screen_file  write_screen_file_copy  write_screen_file_open
 #   toggle_workspace_picker  toggle_command_palette  diff_viewer
@@ -361,6 +382,8 @@
 # keybind = write_screen_file_open=cmd+shift+opt+j     # …opens the file instead
 # keybind = jump_to_previous_prompt=cmd+shift+up
 # keybind = jump_to_next_prompt=cmd+shift+down
+# keybind = dismiss_toast=cmd+shift+n            # the oldest notice; press again to walk down
+# keybind = dismiss_all_toasts=cmd+shift+opt+n
 # keybind = toggle_command_palette=cmd+shift+p
 # keybind = toggle_workspace_picker=cmd+p
 # keybind = diff_viewer=cmd+g                    # diff of the focused repo
@@ -435,11 +458,24 @@
 # shell:
 #
 #   j / k (or ↑ ↓)   move the cursor a row         { / }      move by paragraph
-#   h / l (or ← →)   move a column                 0 / $      ends of the row
+#   h / l (or ← →)   move a column                 0 / ^ / $  ends of the row
 #   w / b / e        move by word                  gg / G     top / bottom
+#   W / B / E        move by WORD                  H / M / L  top / middle / last row
+#   f / F / t / T    find a character on the row   ; / ,      that find again, or back
 #   ctrl+d / ctrl+u  half a page                   v / V      select, by cell or row
-#   ctrl+f / ctrl+b  a full page (space = ctrl+f)  y          copy the selection
-#                                                  esc, q, i  leave
+#   ctrl+f / ctrl+b  a full page (space = ctrl+f)  y / yy     copy the selection, or rows
+#   *                find this word in the buffer  esc, q, i  leave
+#
+# A page moves the cursor, not just the view: it walks half a screen down the buffer
+# and the view follows, so the band sits in the middle while the text runs past it.
+# At the end of the buffer the view stops and the band carries on to the last line.
+#
+# Every motion takes a count, so `12j` moves twelve rows and `3yy` copies three.
+# `0` is the start of the row on its own and a digit once you are typing a count,
+# which is vim's rule: without it `10j` would jump to column 0 and step once.
+#
+# With text selected, the mode opens on the start of your selection. With nothing
+# selected it opens on the last line with anything written on it.
 #
 # Your own chords still work inside it, so ⌘T and pane nav are never swallowed.
 # `{` and `}` are vim's paragraph motion: they move the cursor to the next blank
@@ -447,11 +483,14 @@
 # The mode ends on its own when focus moves, the pane closes, you change tab, or a
 # tool float or palette opens.
 #
+# With a tool float open, ⌘⇧S reads the float's buffer instead of the pane behind it.
+# The card wears the header while the mode is up, and closing the card ends the mode.
+#
 # `v` starts a selection at the cursor and `V` takes whole rows; motions grow it, `y`
 # copies it and pulses what it took, and Esc hands it back without leaving the mode.
-# A selection stays on screen: the terminal core can only read text you can see, so
-# you get the anchor back whenever the buffer moves under it, whether you scrolled or
-# a running command printed. Scroll to the block you want first, then select it.
+# A selection follows its text: scrolling grows it by the rows that arrive, and a resize
+# re-finds it where the rewrap put it. It goes when the row you started on leaves the
+# screen, because the terminal core can only read text you can see.
 #
 # Some chords move the viewport without the mode, for when you want a look rather
 # than a read: ⌘Home and ⌘End go to the ends of the buffer, ⌘Page Up and ⌘Page Down
@@ -474,7 +513,8 @@
 # searches its whole scrollback, not just what's on screen. Every match is
 # highlighted as you type and the bar counts them. If what you typed is only in
 # history, the pane scrolls to it so you can see it while you type; if a match is
-# already on screen, nothing moves.
+# already on screen, nothing moves. With a tool float open the bar opens in the card
+# and searches the float's scrollback.
 #
 # ⌘F opens on whatever you have selected, so searching a word you can see never
 # means retyping it. Either kind counts: a mouse selection, or a `v` selection made
@@ -482,13 +522,23 @@
 # is the same thing except that with nothing selected it does nothing at all.
 #
 # Stepping matches is `n` and `N` while the search holds the keyboard, not a chord,
-# so `find_next` and `find_previous` ship with no shortcut. Give them one here if you
-# want to step from anywhere: `keybind = find_next=cmd+opt+g` and its shifted pair.
+# so `search_next` and `search_previous` ship with no shortcut. Give them one here if
+# you would rather step on a chord: `keybind = search_next=cmd+opt+g` and its shifted
+# pair. The old `find_next` and `find_previous` still parse.
+# With no bar up there is no search to step and the chord does nothing.
 #
 # Enter hands the keys back to the pane and puts you in scroll mode on the match,
 # where `n` and `N` step forward and back (Enter and shift+Enter do the same), and
 # `v` / `V` / `y` select and copy what you found. Esc closes the bar and leaves
 # scroll mode with it, unless you were already in scroll mode when you opened it.
+#
+# The count reads in the order you see on screen: match 1 is the one nearest the top
+# of your scrollback. Stepping does not wrap, so `n` on the oldest match and `N` on
+# the newest both stay where they are.
+#
+# The find bar and a live prompt never sit on screen together. So leaving scroll mode
+# any other way closes the bar too: `q`, `i`, and ⌘⇧S all end the search and give the
+# prompt back every key, `n` and `N` included.
 #
 # If the search scrolled you back through the buffer, closing it returns you to
 # where you were when you opened it, and so does typing past the last match. That is
@@ -532,7 +582,7 @@
 #
 # `clear_screen` (⌘K) wipes the screen and the scrollback with it, the way `clear`
 # does. It leaves a full-screen program alone: vim and its kind draw on a second screen
-# that has no scrollback to clear.
+# that has no scrollback to clear. Over an open tool float it clears the card.
 #
 # `write_screen_file` (⌘⇧J) writes what is on screen to a file and types the path at
 # your prompt, so the next command has something to point at. Reach for it when a wall

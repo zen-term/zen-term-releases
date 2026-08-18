@@ -64,7 +64,7 @@ keys? Four lines in the config move it to `⌃HJKL` or anywhere else.
 | Find in the pane's scrollback    | `⌘F`                        |
 | Bottom drawer                    | `⌘B`                        |
 | Right drawer                     | `⌘\`                        |
-| Scratch, a blank shell over the window | `⌘;`                  |
+| Scratch, a blank shell over the tab | `⌘;`                     |
 | New window                       | `⌘N`                        |
 | Previous and next tab            | `⌘[` `⌘]`                   |
 | Previous and next pane           | `⌘⇧[` `⌘⇧]`                 |
@@ -129,10 +129,11 @@ hand an agent the exact lines you mean, and `⏎` opens a comment on them.
 ## Read back through a pane
 
 **⌘⇧S** puts the focused pane into scroll mode, and the keys are vim's again. `j` and
-`k` move a row, `h` and `l` a column, `w` `b` `e` a word, `0` and `$` reach the ends of
-a line, `{` and `}` jump between blocks of output, `⌃d` and `⌃u` move a half page, and
-`gg` and `G` go to the ends. The header tells you how far below you are, and a band
-marks the row you are reading.
+`k` move a row, `h` and `l` a column, `w` `b` `e` a word, `0` `^` and `$` reach the ends
+of a line, `{` and `}` jump between blocks of output, `f` finds a character on the row,
+`⌃d` and `⌃u` move a half page, and `gg` and `G` go to the ends. Counts work, so `12j`
+moves twelve rows. The header tells you how far below you are, and a band marks the row
+you are reading. It opens on your selection if you have one.
 
 `v` starts a selection and `V` takes whole lines. `y` copies it and flashes what it
 took. `q` leaves. Nothing you type reaches the shell while the mode is up, but your own
@@ -146,9 +147,12 @@ drops you on the match in scroll mode, where `n` and `N` step through the rest a
 copies what you came for. `Esc` closes the bar and hands the pane back where you were
 before you opened it.
 
-A selection stays on the screen you can see. Scroll to the block you want first, then
-select it: you get the selection back whenever the buffer moves under it, whether you
-scrolled or a running command printed.
+Both read a tool float too. With a card open, `⌘⇧S` and `⌘F` work on the float's buffer
+instead of the pane behind it, and the card wears the header while they are up.
+
+A selection follows its text. Scrolling grows it by the rows that arrive, and a resize
+re-finds it where the rewrap put it. It goes when the row you started on leaves the
+screen, because the terminal core can only read text you can see.
 
 ## Neovim: one motion across splits and panes
 
